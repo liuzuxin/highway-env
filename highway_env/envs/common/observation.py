@@ -173,7 +173,9 @@ class KinematicObservation(ObservationType):
         self.observe_intentions = observe_intentions
 
     def space(self) -> spaces.Space:
-        return spaces.Box(shape=(self.vehicles_count, len(self.features)), low=-np.inf, high=np.inf, dtype=np.float32)
+        # TODO: change observation shape
+        # return spaces.Box(shape=(self.vehicles_count, len(self.features)), low=-np.inf, high=np.inf, dtype=np.float32)
+        return spaces.Box(-np.inf, np.inf, (self.vehicles_count*len(self.features),), dtype=np.float32)
 
     def normalize_obs(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -228,7 +230,7 @@ class KinematicObservation(ObservationType):
         if self.order == "shuffled":
             self.env.np_random.shuffle(obs[1:])
         # Flatten
-        return obs.astype(self.space().dtype)
+        return (obs.astype(self.space().dtype)).flatten()
 
 
 class OccupancyGridObservation(ObservationType):
