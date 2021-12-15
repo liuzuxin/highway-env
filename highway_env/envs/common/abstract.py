@@ -219,7 +219,6 @@ class AbstractEnv(gym.Env):
         reward = self._reward(action)
         terminal = self._is_terminal()
         info = self._info(obs, action)
-
         return obs, reward, terminal, info
 
     def _simulate(self, action: Optional[Action] = None) -> None:

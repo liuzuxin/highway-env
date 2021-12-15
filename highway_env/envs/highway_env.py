@@ -25,16 +25,17 @@ class HighwayEnv(AbstractEnv):
                 "type": "Kinematics"
             },
             "action": {
-                "type": "DiscreteMetaAction",
+                "type": "ContinuousAction",
             },
             "lanes_count": 4,
             "vehicles_count": 50,
             "controlled_vehicles": 1,
             "initial_lane_id": None,
+            "simulation_frequency": 2,
             "duration": 40,  # [s]
             "ego_spacing": 2,
             "vehicles_density": 1,
-            "collision_reward": -1,    # The reward received when colliding with a vehicle.
+            "collision_reward": 0,    # The reward received when colliding with a vehicle.
             "right_lane_reward": 0.1,  # The reward received when driving on the right-most lanes, linearly mapped to
                                        # zero for other lanes.
             "high_speed_reward": 0.4,  # The reward received when driving at full speed, linearly mapped to zero for
@@ -84,16 +85,16 @@ class HighwayEnv(AbstractEnv):
         neighbours = self.road.network.all_side_lanes(self.vehicle.lane_index)
         lane = self.vehicle.target_lane_index[2] if isinstance(self.vehicle, ControlledVehicle) \
             else self.vehicle.lane_index[2]
+        # print('lane num = ', lane)
         scaled_speed = utils.lmap(self.vehicle.speed, self.config["reward_speed_range"], [0, 1])
         reward = \
-            + self.config["collision_reward"] * self.vehicle.crashed \
             + self.config["right_lane_reward"] * lane / max(len(neighbours) - 1, 1) \
             + self.config["high_speed_reward"] * np.clip(scaled_speed, 0, 1)
+            # + self.config["collision_reward"] * self.vehicle.crashed \
         reward = utils.lmap(reward,
                           [self.config["collision_reward"],
                            self.config["high_speed_reward"] + self.config["right_lane_reward"]],
                           [0, 1])
-        reward = 0 if not self.vehicle.on_road else reward
         return reward
 
     def _is_terminal(self) -> bool:
@@ -104,7 +105,7 @@ class HighwayEnv(AbstractEnv):
 
     def _cost(self, action: int) -> float:
         """The cost signal is the occurrence of collision."""
-        return float(self.vehicle.crashed)
+        return float(self.vehicle.crashed) + 1.0 - float(self.vehicle.on_road)
 
 
 class HighwayEnvFast(HighwayEnv):

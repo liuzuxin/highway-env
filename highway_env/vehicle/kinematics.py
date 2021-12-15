@@ -120,6 +120,8 @@ class Vehicle(RoadObject):
         v = self.speed * np.array([np.cos(self.heading + beta),
                                    np.sin(self.heading + beta)])
         self.position += v * dt
+        if self.impact is None:
+            self.crashed = False
         if self.impact is not None:
             self.position += self.impact
             self.crashed = True
@@ -129,9 +131,9 @@ class Vehicle(RoadObject):
         self.on_state_update()
 
     def clip_actions(self) -> None:
-        if self.crashed:
-            self.action['steering'] = 0
-            self.action['acceleration'] = -1.0*self.speed
+        # if self.crashed:
+        #     self.action['steering'] = 0
+        #     self.action['acceleration'] = -1.0*self.speed
         self.action['steering'] = float(self.action['steering'])
         self.action['acceleration'] = float(self.action['acceleration'])
         if self.speed > self.MAX_SPEED:
